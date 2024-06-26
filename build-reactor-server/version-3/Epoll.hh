@@ -1,0 +1,36 @@
+#pragma once
+
+#include <vector>
+#include <sys/epoll.h>
+
+#include "util.hh"
+#include <string.h>
+
+
+namespace yichen
+{
+
+    class Channel;
+
+    class Epoll {
+    private:
+        int epfd;
+        struct epoll_event *events;
+
+    public:
+        Epoll();
+        ~Epoll();
+
+        inline void addFd(int fd, uint32_t op) {
+            struct epoll_event ev;
+            bzero(&ev, sizeof(ev));
+            ev.data.fd = fd;
+            ev.events = op;
+            DEBUG(epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1, "epoll add event error");
+        }
+        
+        void updateChannel(Channel* ch);
+        std::vector<Channel*> poll(int timeout = -1);
+    };
+
+}
